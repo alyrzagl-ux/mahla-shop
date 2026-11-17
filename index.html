@@ -1,69 +1,329 @@
-<div id="loginGate">
-  <div class="login-box">
-    <h2>مدیریت فروشگاه</h2>
-    <p>ورود مدیران</p>
 
-    <input id="username" placeholder="نام کاربری">
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مدیریت فروشگاه مهلا</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#faf6f2;color:#403632;font-family:Tahoma,Arial,sans-serif}
+header{background:linear-gradient(120deg,#f5dce1,#fff4e8);padding:22px 16px;text-align:center;border-bottom:2px solid #d6b77a}
+header h1{margin:0;color:#76534d;font-size:23px}
+header p{margin:8px 0 0;color:#8d7067;font-size:12px}
+main{max-width:1000px;margin:auto;padding:14px}
+.card{background:white;border:1px solid #eee2dc;border-radius:15px;padding:15px;margin:12px 0;box-shadow:0 3px 12px #6040300b}
+h2{font-size:17px;color:#986b64;margin:5px 0 14px}
+input,select,button{font-family:inherit;font-size:14px}
+input,select{width:100%;padding:12px;border:1px solid #e6d9d2;border-radius:10px;margin:5px 0 10px;background:#fff}
+button{border:0;border-radius:10px;padding:12px 15px;background:#b98283;color:white;cursor:pointer;margin:4px}
+button.secondary{background:#e9d9cf;color:#624b43}
+button.danger{background:#a84d4d}
+button.green{background:#648b71}
+nav{display:flex;gap:6px;overflow-x:auto;padding:8px 0}
+nav button{white-space:nowrap;font-size:12px}
+.page{display:none}
+.page.active{display:block}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.stat{background:#fff7f3;border:1px solid #f0e3dc;border-radius:12px;padding:13px}
+.stat small{display:block;color:#92766d;margin-bottom:8px}
+.stat strong{font-size:16px;color:#75534c}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+table{width:100%;border-collapse:collapse;font-size:12px;min-width:520px}
+th,td{padding:10px;border-bottom:1px solid #eee;text-align:center}
+th{background:#fbf0eb;color:#795b52}
+.tablewrap{overflow-x:auto}
+.item{padding:12px;border-bottom:1px solid #eee;line-height:2;font-size:13px}
+.hidden{display:none!important}
+#login{max-width:420px;margin:50px auto}
+.muted{font-size:11px;color:#9b8981}
+@media(min-width:700px){.stats{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
 
-    <input id="password" type="password"
-    placeholder="رمز عبور">
+<header>
+<h1>فروشگاه مهلا</h1>
+<p>سامانه مدیریت فروش، انبار و حسابداری</p>
+</header>
 
-    <button onclick="login()">ورود به فروشگاه</button>
+<main>
+<section id="login" class="card">
+<h2>ورود مدیر فروشگاه</h2>
+<label>نام کاربری</label>
+<input id="username" placeholder="نام مدیر">
+<label>رمز عبور</label>
+<input id="password" type="password" placeholder="رمز عبور">
+<button style="width:100%" onclick="login()">ورود به پنل مدیریت</button>
+<p id="loginError" style="color:#b44"></p>
+<p class="muted">ورود این نسخه نمایشی است و احراز هویت امن سروری ندارد.</p>
+</section>
 
-    <p id="error"></p>
-  </div>
+<section id="app" class="hidden">
+<nav>
+<button onclick="showPage('dashboard')">داشبورد</button>
+<button onclick="showPage('products')">انبار کالا</button>
+<button onclick="showPage('buy')">ثبت خرید</button>
+<button onclick="showPage('sell')">ثبت فروش</button>
+<button onclick="showPage('customers')">مشتریان</button>
+<button onclick="showPage('expenses')">هزینه‌ها</button>
+<button onclick="showPage('capital')">سرمایه</button>
+<button onclick="showPage('reports')">گزارش‌ها</button>
+<button class="danger" onclick="logout()">خروج</button>
+</nav>
+
+<section id="dashboard" class="page active">
+<div class="card">
+<h2>خلاصه وضعیت فروشگاه</h2>
+<div class="stats">
+<div class="stat"><small>ارزش موجودی بر اساس قیمت خرید</small><strong id="stockValue">۰</strong></div>
+<div class="stat"><small>تعداد کالاها</small><strong id="stockCount">۰</strong></div>
+<div class="stat"><small>فروش ثبت‌شده</small><strong id="salesTotal">۰</strong></div>
+<div class="stat"><small>سود ناخالص فروش</small><strong id="profitTotal">۰</strong></div>
+<div class="stat"><small>دریافت از مشتریان</small><strong id="receivedTotal">۰</strong></div>
+<div class="stat"><small>بدهی مشتریان</small><strong id="debtTotal">۰</strong></div>
+<div class="stat"><small>هزینه‌ها</small><strong id="expenseTotal">۰</strong></div>
+<div class="stat"><small>موجودی نقدی تخمینی</small><strong id="cashTotal">۰</strong></div>
 </div>
-const ADMIN_USER = "مهلا برات زاده";
-const ADMIN_PASS = "پس1231";
+</div>
+<div class="card">
+<h2>آخرین فعالیت‌ها</h2>
+<div id="recent"></div>
+</div>
+</section>
 
-function login() {
-  let user = document.getElementById("username").value;
-  let pass = document.getElementById("password").value;
+<section id="products" class="page">
+<div class="card">
+<h2>ثبت کالای جدید</h2>
+<div class="row">
+<div><label>نام کالا</label><input id="pname" placeholder="مثلاً لگ ورزشی"></div>
+<div><label>کد کالا</label><input id="pcode" placeholder="مثلاً L001"></div>
+<div><label>دسته‌بندی</label><select id="pcat"><option>سوتین</option><option>لگ ورزشی</option><option>جوراب</option><option>لباس ورزشی</option><option>سایر</option></select></div>
+<div><label>سایز</label><input id="psize" placeholder="مثلاً M"></div>
+<div><label>رنگ</label><input id="pcolor" placeholder="مثلاً مشکی"></div>
+<div><label>قیمت خرید (تومان)</label><input id="pcost" type="number"></div>
+<div><label>قیمت فروش (تومان)</label><input id="pprice" type="number"></div>
+<div><label>موجودی اولیه</label><input id="pqty" type="number" value="0"></div>
+</div>
+<button onclick="addProduct()">ثبت کالا</button>
+</div>
+<div class="card">
+<h2>لیست انبار</h2>
+<div class="tablewrap"><table><thead><tr><th>نام</th><th>کد</th><th>سایز</th><th>رنگ</th><th>خرید</th><th>فروش</th><th>موجودی</th><th>عملیات</th></tr></thead><tbody id="productList"></tbody></table></div>
+</div>
+</section>
 
-  if (user === ADMIN_USER && pass === ADMIN_PASS) {
-    sessionStorage.setItem("shop_login", "true");
-    document.getElementById("loginGate").style.display = "none";
-    document.body.classList.remove("locked");
-  } else {
-    document.getElementById("error").innerText =
-      "نام کاربری یا رمز اشتباه است";
-  }
-}
+<section id="buy" class="page">
+<div class="card">
+<h2>ثبت خرید کالا و افزایش موجودی</h2>
+<label>انتخاب کالا</label><select id="buyProduct"></select>
+<div class="row">
+<div><label>تعداد خرید</label><input id="buyQty" type="number" min="1"></div>
+<div><label>قیمت خرید هر عدد (تومان)</label><input id="buyCost" type="number"></div>
+</div>
+<button onclick="buyProduct()">ثبت خرید</button>
+</div>
+</section>
 
-if (sessionStorage.getItem("shop_login") === "true") {
-  document.getElementById("loginGate").style.display = "none";
-}
-#loginGate {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: #f5e6e9;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-}
+<section id="sell" class="page">
+<div class="card">
+<h2>ثبت فروش کالا</h2>
+<label>انتخاب کالا</label><select id="sellProduct"></select>
+<div class="row">
+<div><label>تعداد فروش</label><input id="sellQty" type="number" min="1"></div>
+<div><label>قیمت فروش هر عدد (تومان)</label><input id="sellPrice" type="number"></div>
+</div>
+<label>نام مشتری (اختیاری)</label><input id="sellCustomer" placeholder="نام مشتری">
+<label>مبلغ دریافت‌شده (تومان)</label><input id="sellPaid" type="number" placeholder="اگر کامل پرداخت کرده، مبلغ کامل را وارد کن">
+<button onclick="sellProduct()">ثبت فروش</button>
+</div>
+</section>
 
-.login-box {
-  background: white;
-  padding: 30px;
-  border-radius: 20px;
-  width: 100%;
-  max-width: 350px;
-  text-align: center;
-}
+<section id="customers" class="page">
+<div class="card">
+<h2>ثبت مشتری</h2>
+<label>نام مشتری</label><input id="cname" placeholder="نام و نام خانوادگی">
+<label>شماره تماس</label><input id="cphone" placeholder="شماره تماس">
+<button onclick="addCustomer()">ثبت مشتری</button>
+</div>
+<div class="card">
+<h2>مشتریان و حساب اقساط</h2>
+<div id="customerList"></div>
+</div>
+<div class="card">
+<h2>ثبت دریافت قسط یا پرداخت مشتری</h2>
+<label>مشتری</label><select id="payCustomer"></select>
+<label>مبلغ دریافتی (تومان)</label><input id="payAmount" type="number">
+<button onclick="payCustomer()">ثبت دریافت</button>
+</div>
+</section>
 
-.login-box input,
-.login-box button {
-  width: 100%;
-  padding: 14px;
-  margin: 8px 0;
-  border-radius: 10px;
-  border: 1px solid #ead9dd;
-}
+<section id="expenses" class="page">
+<div class="card">
+<h2>ثبت هزینه‌های فروشگاه</h2>
+<label>عنوان هزینه</label><input id="expenseName" placeholder="مثلاً کرایه، بسته‌بندی">
+<label>مبلغ (تومان)</label><input id="expenseAmount" type="number">
+<button onclick="addExpense()">ثبت هزینه</button>
+</div>
+<div class="card"><h2>فهرست هزینه‌ها</h2><div id="expenseList"></div></div>
+</section>
 
-.login-box button {
-  background: #463b3d;
-  color: white;
-  cursor: pointer;
+<section id="capital" class="page">
+<div class="card">
+<h2>ورود یا برداشت سرمایه</h2>
+<label>نوع عملیات</label><select id="capitalType"><option value="in">افزایش سرمایه / ورود پول</option><option value="out">برداشت سرمایه / خروج پول</option></select>
+<label>مبلغ (تومان)</label><input id="capitalAmount" type="number">
+<label>توضیحات</label><input id="capitalNote" placeholder="توضیحات اختیاری">
+<button onclick="addCapital()">ثبت عملیات</button>
+</div>
+<div class="card"><h2>گردش سرمایه</h2><div id="capitalList"></div></div>
+</section>
+
+<section id="reports" class="page">
+<div class="card">
+<h2>گزارش مالی فروشگاه</h2>
+<div id="reportContent"></div>
+</div>
+<div class="card">
+<h2>پشتیبان‌گیری از اطلاعات</h2>
+<p class="muted">برای نگهداری اطلاعات، هر چند وقت یک‌بار فایل پشتیبان بگیر.</p>
+<button class="green" onclick="backup()">دانلود فایل پشتیبان</button>
+<label>بازیابی فایل پشتیبان</label>
+<input type="file" id="restoreFile" accept=".json">
+<button class="secondary" onclick="restore()">بازیابی اطلاعات</button>
+<button class="danger" onclick="clearData()">حذف تمام اطلاعات برنامه</button>
+</div>
+</section>
+</section>
+</main>
+
+<script>
+const KEY="mahla_shop_data_v1";
+let data=JSON.parse(localStorage.getItem(KEY)||"null")||{
+products:[],sales:[],purchases:[],customers:[],payments:[],expenses:[],capital:[]
+};
+function save(){localStorage.setItem(KEY,JSON.stringify(data));render();}
+function money(n){return (Number(n)||0).toLocaleString("fa-IR")+" تومان";}
+function num(id){return Number(document.getElementById(id).value)||0;}
+function val(id){return document.getElementById(id).value.trim();}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function login(){
+if(val("username")==="مهلا برات زاده" && document.getElementById("password").value==="پس1231"){
+document.getElementById("login").classList.add("hidden");
+document.getElementById("app").classList.remove("hidden");
+render();
+}else document.getElementById("loginError").textContent="نام کاربری یا رمز عبور اشتباه است.";
 }
+function logout(){
+document.getElementById("app").classList.add("hidden");
+document.getElementById("login").classList.remove("hidden");
+document.getElementById("password").value="";
+}
+function showPage(id){
+document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+render();
+}
+function addProduct(){
+let name=val("pname"),code=val("pcode");
+if(!name||!code)return alert("نام و کد کالا را وارد کن.");
+if(data.products.some(p=>p.code===code))return alert("این کد کالا قبلاً ثبت شده.");
+data.products.push({id:uid(),name,code,cat:val("pcat"),size:val("psize"),color:val("pcolor"),cost:num("pcost"),price:num("pprice"),qty:num("pqty")});
+["pname","pcode","psize","pcolor","pcost","pprice"].forEach(id=>document.getElementById(id).value="");
+document.getElementById("pqty").value="0";save();
+}
+function buyProduct(){
+let p=data.products.find(x=>x.id===document.getElementById("buyProduct").value);
+let q=num("buyQty"),cost=num("buyCost");
+if(!p||q<=0||cost<=0)return alert("کالا، تعداد و قیمت خرید را درست وارد کن.");
+p.qty+=q;p.cost=cost;
+data.purchases.push({id:uid(),product:p.name,qty:q,cost,total:q*cost,date:new Date().toISOString()});
+save();alert("خرید ثبت شد و موجودی انبار افزایش یافت.");
+}
+function sellProduct(){
+let p=data.products.find(x=>x.id===document.getElementById("sellProduct").value);
+let q=num("sellQty"),price=num("sellPrice"),paid=num("sellPaid");
+if(!p||q<=0||price<=0)return alert("اطلاعات فروش را کامل وارد کن.");
+if(q>p.qty)return alert("موجودی انبار کافی نیست.");
+let total=q*price;
+if(paid>total)return alert("مبلغ دریافتی نمی‌تواند بیشتر از مبلغ فروش باشد.");
+p.qty-=q;
+data.sales.push({id:uid(),product:p.name,qty:q,price,cost:p.cost,total,paid,profit:q*(price-p.cost),customer:val("sellCustomer"),date:new Date().toISOString()});
+save();alert("فروش ثبت شد.");
+}
+function addCustomer(){
+let name=val("cname");if(!name)return alert("نام مشتری را وارد کن.");
+data.customers.push({id:uid(),name,phone:val("cphone")});save();
+document.getElementById("cname").value="";document.getElementById("cphone").value="";
+}
+function payCustomer(){
+let c=data.customers.find(x=>x.id===document.getElementById("payCustomer").value),amount=num("payAmount");
+if(!c||amount<=0)return alert("مشتری و مبلغ را وارد کن.");
+let debt=customerDebt(c.id);
+if(amount>debt)return alert("مبلغ دریافتی از مانده بدهی بیشتر است.");
+data.payments.push({id:uid(),customerId:c.id,amount,date:new Date().toISOString()});
+save();alert("دریافت مشتری ثبت شد.");
+}
+function customerDebt(id){
+let sold=data.sales.filter(s=>s.customer && data.customers.some(c=>c.id===id&&c.name===s.customer)).reduce((a,s)=>a+s.total,0);
+let paid=data.sales.filter(s=>s.customer && data.customers.some(c=>c.id===id&&c.name===s.customer)).reduce((a,s)=>a+s.paid,0);
+paid+=data.payments.filter(p=>p.customerId===id).reduce((a,p)=>a+p.amount,0);
+return Math.max(0,sold-paid);
+}
+function addExpense(){
+let name=val("expenseName"),amount=num("expenseAmount");
+if(!name||amount<=0)return alert("عنوان و مبلغ هزینه را وارد کن.");
+data.expenses.push({id:uid(),name,amount,date:new Date().toISOString()});
+document.getElementById("expenseName").value="";document.getElementById("expenseAmount").value="";save();
+}
+function addCapital(){
+let amount=num("capitalAmount");if(amount<=0)return alert("مبلغ را وارد کن.");
+data.capital.push({id:uid(),type:val("capitalType"),amount,note:val("capitalNote"),date:new Date().toISOString()});
+document.getElementById("capitalAmount").value="";document.getElementById("capitalNote").value="";save();
+}
+function delProduct(id){if(confirm("این کالا حذف شود؟")){data.products=data.products.filter(x=>x.id!==id);save();}}
+function delCustomer(id){if(confirm("این مشتری حذف شود؟")){data.customers=data.customers.filter(x=>x.id!==id);save();}}
+function render(){
+let $=id=>document.getElementById(id);
+$("productList").innerHTML=data.products.map(p=>`<tr><td>${esc(p.name)}</td><td>${esc(p.code)}</td><td>${esc(p.size)}</td><td>${esc(p.color)}</td><td>${money(p.cost)}</td><td>${money(p.price)}</td><td>${p.qty}</td><td><button class="danger" onclick="delProduct('${p.id}')">حذف</button></td></tr>`).join("");
+let options=data.products.map(p=>`<option value="${p.id}">${esc(p.name)} - ${esc(p.code)} (موجودی ${p.qty})</option>`).join("");
+$("buyProduct").innerHTML=options;$("sellProduct").innerHTML=options;
+$("customerList").innerHTML=data.customers.map(c=>`<div class="item"><b>${esc(c.name)}</b> | ${esc(c.phone)}<br>مانده بدهی: <b>${money(customerDebt(c.id))}</b><br><button class="danger" onclick="delCustomer('${c.id}')">حذف مشتری</button></div>`).join("")||"مشتری ثبت نشده است.";
+$("payCustomer").innerHTML=data.customers.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join("");
+$("expenseList").innerHTML=data.expenses.map(e=>`<div class="item">${esc(e.name)}: ${money(e.amount)}</div>`).join("")||"هزینه‌ای ثبت نشده است.";
+$("capitalList").innerHTML=data.capital.map(c=>`<div class="item">${c.type==="in"?"ورود سرمایه":"برداشت سرمایه"}: ${money(c.amount)} - ${esc(c.note)}</div>`).join("")||"عملیاتی ثبت نشده است.";
+let stock=data.products.reduce((a,p)=>a+p.qty*p.cost,0);
+let sales=data.sales.reduce((a,s)=>a+s.total,0);
+let profit=data.sales.reduce((a,s)=>a+s.profit,0);
+let received=data.sales.reduce((a,s)=>a+s.paid,0)+data.payments.reduce((a,p)=>a+p.amount,0);
+let debt=data.customers.reduce((a,c)=>a+customerDebt(c.id),0);
+let expenses=data.expenses.reduce((a,e)=>a+e.amount,0);
+let capitalIn=data.capital.filter(c=>c.type==="in").reduce((a,c)=>a+c.amount,0);
+let capitalOut=data.capital.filter(c=>c.type==="out").reduce((a,c)=>a+c.amount,0);
+let purchases=data.purchases.reduce((a,p)=>a+p.total,0);
+let cash=capitalIn-capitalOut+received-purchases-expenses;
+$("stockValue").textContent=money(stock);$("stockCount").textContent=data.products.reduce((a,p)=>a+p.qty,0).toLocaleString("fa-IR");
+$("salesTotal").textContent=money(sales);$("profitTotal").textContent=money(profit);
+$("receivedTotal").textContent=money(received);$("debtTotal").textContent=money(debt);
+$("expenseTotal").textContent=money(expenses);$("cashTotal").textContent=money(cash);
+$("recent").innerHTML=[...data.sales.map(s=>({text:"فروش "+s.product+" به مبلغ "+money(s.total),date:s.date})),...data.purchases.map(p=>({text:"خرید "+p.product+" به مبلغ "+money(p.total),date:p.date}))].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8).map(x=>`<div class="item">${esc(x.text)}</div>`).join("")||"هنوز فعالیتی ثبت نشده است.";
+$("reportContent").innerHTML=`<p>مجموع فروش: <b>${money(sales)}</b></p><p>سود ناخالص: <b>${money(profit)}</b></p><p>مجموع خرید کالا: <b>${money(purchases)}</b></p><p>مجموع هزینه‌ها: <b>${money(expenses)}</b></p><p>دریافت از مشتریان: <b>${money(received)}</b></p><p>بدهی مشتریان: <b>${money(debt)}</b></p><p>ارزش موجودی انبار با قیمت خرید: <b>${money(stock)}</b></p><p>موجودی نقدی تخمینی: <b>${money(cash)}</b></p>`;
+}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function backup(){
+let blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="backup-mahla-shop.json";a.click();URL.revokeObjectURL(a.href);
+}
+function restore(){
+let f=document.getElementById("restoreFile").files[0];if(!f)return alert("اول فایل پشتیبان را انتخاب کن.");
+let r=new FileReader();r.onload=()=>{try{let d=JSON.parse(r.result);if(!d.products||!d.sales||!d.customers)throw Error();data=d;save();alert("اطلاعات بازیابی شد.");}catch(e){alert("فایل پشتیبان معتبر نیست.");}};r.readAsText(f);
+}
+function clearData(){
+if(confirm("تمام اطلاعات فروشگاه برای همیشه از این مرورگر پاک شود؟")){
+if(confirm("این کار قابل برگشت نیست. مطمئنی؟")){data={products:[],sales:[],purchases:[],customers:[],payments:[],expenses:[],capital:[]};save();}
+}
+}
+render();
+</script>
+</body>
+</html>
