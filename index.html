@@ -1,1 +1,69 @@
+<div id="loginGate">
+  <div class="login-box">
+    <h2>مدیریت فروشگاه</h2>
+    <p>ورود مدیران</p>
 
+    <input id="username" placeholder="نام کاربری">
+
+    <input id="password" type="password"
+    placeholder="رمز عبور">
+
+    <button onclick="login()">ورود به فروشگاه</button>
+
+    <p id="error"></p>
+  </div>
+</div>
+const ADMIN_USER = "مهلا برات زاده";
+const ADMIN_PASS = "پس1231";
+
+function login() {
+  let user = document.getElementById("username").value;
+  let pass = document.getElementById("password").value;
+
+  if (user === ADMIN_USER && pass === ADMIN_PASS) {
+    sessionStorage.setItem("shop_login", "true");
+    document.getElementById("loginGate").style.display = "none";
+    document.body.classList.remove("locked");
+  } else {
+    document.getElementById("error").innerText =
+      "نام کاربری یا رمز اشتباه است";
+  }
+}
+
+if (sessionStorage.getItem("shop_login") === "true") {
+  document.getElementById("loginGate").style.display = "none";
+}
+#loginGate {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #f5e6e9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.login-box {
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 350px;
+  text-align: center;
+}
+
+.login-box input,
+.login-box button {
+  width: 100%;
+  padding: 14px;
+  margin: 8px 0;
+  border-radius: 10px;
+  border: 1px solid #ead9dd;
+}
+
+.login-box button {
+  background: #463b3d;
+  color: white;
+  cursor: pointer;
+}
